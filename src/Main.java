@@ -7,166 +7,51 @@ import java.math.BigInteger;
  * @author yoshikyoto
  */
 class Main extends MyUtil{
-	static int h, w, n;
 	public static void main(String[] args) throws Exception{
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		h = readIntMap(0);
-		w = readIntMap(1);
-		n = readIntMap(2);
-		char[][] table = new char[h][w];
-		for(int i = 0; i < h; i++){
-			table[i] = readLine().toCharArray();
-		}
-
-		if(solve(table)){
-			System.out.println("YES");
-		}else{
-			System.out.println("NO");
-		}
-
-		// System.out.println(Arrays.deepToString(table));
-	}
-
-	static boolean solve(char[][] table){
-		for(int i = 0; i < h; i++){
-			for(int j = 0; j < w-1; j++){
-				char[][] table_swapped = swap(table, i, j);
-				if(check(table_swapped)) return true;
+		while (true) {
+			// 入力は独自クラスを使っている
+			int[] in = readIntMap();
+			if(in[0] + in[1] == 0) break;
+			cnt = 0;
+			max = 0;
+			check(10, in[0], in[1], 0, "");
+			if(cnt == 0){
+				System.out.println("error");
+			}else if (cnt > 1){
+				System.out.println("rejected");
+			}else{
+				System.out.println(max + " " + ans);
 			}
 		}
-		return false;
-	}
-
-	/**
-	 * (x, y) の右と交換する
-	 * @param table
-	 * @param y
-	 * @param x
-	 * @return
-	 */
-	static char[][] swap(char[][] table, int y, int x){
-		char[][] table_cp = new char[h][w];
-		for(int i = 0; i < h; i++){
-			for(int j = 0; j < w; j++){
-				table_cp[i][j] = table[i][j];
-			}
-		}
-		table_cp[y][x] = table[y][x+1];
-		table_cp[y][x+1] = table[y][x];
-		// 入れ替えたら詰める
-		tsume(table_cp);
-		return table_cp;
-	}
-
-	/**
-	 * 全部消えるかチェックする
-	 * @param table
-	 * @return
-	 */
-	static boolean check(char[][] table){
-		char[][] table_cp = new char[h][w];
-		// コピーとチェック
-		boolean clear_flag = true;
-		for(int i = 0; i < h; i++){
-			for(int j = 0; j < w; j++){
-				table_cp[i][j] = table[i][j];
-				if(table[i][j] != '.') clear_flag = false;
-			}
-		}
-		// 全部消えていたらそこで終了
-		if(clear_flag) return true;
-
-		// 消えるところは消す
-		boolean erase_flag = false;
-		for(int i = 0; i < h; i++){
-			for(int j = 0; j < w; j++){
-				if(table[i][j] == '.') continue;
-				// System.out.println("for " + i + " " + j);
-				// たて
-				int vcnt = verticalCount(table, i, j);
-				// System.out.println("vcnt: " + vcnt);
-				if(vcnt >= n){
-					erase_flag = true;
-					for(int k = 0; k < vcnt; k++){
-						table_cp[i+k][j] = '.';
-					}
-				}
-				// よこ
-				int hcnt = horizontalCount(table, i, j);
-				if(hcnt >= n){
-					erase_flag = true;
-					for(int k = 0; k < hcnt; k++){
-						table_cp[i][j+k] = '.';
-					}
-				}
-			}
-		}
-
-		// 消えなかったらそこで終了
-		
-		if(!erase_flag) return false;
-
-		// 消えた場合
-		// 詰める
-		for(int i = 1; i < h; i++){
-			tsume(table_cp);
-		}
-		return check(table_cp);
-	}
-
-	static void tsume(char[][] table){
-		// System.out.println(h-1);
-		for(int i = h-1; i >= 1; i--){
-			for(int j = 0; j < w; j++){
-				if(table[i][j] == '.'){
-					table[i][j] = table[i-1][j];
-					table[i-1][j] = '.';
-				}
-			}
-		}
-	}
-
-	static int verticalCount(char[][] table, int i, int j){
-		int cnt = 1;
-		char c = table[i][j];
-		try{
-			for(int k = 1; k <= h; k++){
-				if(table[i+k][j] != c) throw new Exception();
-				cnt++;
-			}
-		}catch(Exception e){
-		}
-		return cnt;
-	}
-
-	static int horizontalCount(char[][] table, int i, int j){
-		int cnt = 1;
-		char c = table[i][j];
-		
-		try{
-			for(int k = 1; k <= w; k++){
-				if(table[i][j+k] != c) throw new Exception();
-				cnt++;
-			}
-		}catch(Exception e){
-		}
-		return cnt;
-	}
-
-	public static char[] cp(char[] a){
-		char[] b = new char[a.length];
-		for(int i = 0; i < a.length; i++) b[i] = a[i];
-		return b;
 	}
 	
-	public static void print(char[][] table){
-		for(int i = 0; i < h; i++){
-			StringBuffer buf = new StringBuffer();
-			for(int j = 0; j < w; j++){
-				buf.append(table[i][j]);
+	static int cnt = 0;
+	static int max = 0;
+	static String ans = "";
+	static void check(int i, int t, int num, int sum, String buf){
+		if(num < i){
+			sum += num;
+			buf = num + buf;
+			if(max < sum && sum <= t){
+				max = sum;
+				ans = buf;
+				cnt = 1;
+			}else if(max == sum){
+				cnt++;
 			}
-			System.out.println(buf.toString());
+			return;
 		}
+		
+		// iで分断しない場合
+		// System.out.println(num + " を分断しない");
+		check(i*10, t, num, sum, buf);
+		
+		// iで分断する場合
+		int next_num = num / i;
+		int bundan = num % i;
+		int next_sum = sum + bundan;
+		// System.out.println(num + " を " + next_num + " と分断");
+		check(10, t, next_num, next_sum, " " + bundan + buf);
 	}
 }
 
