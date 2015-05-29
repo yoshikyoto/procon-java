@@ -6,52 +6,68 @@ import java.math.BigInteger;
 /**
  * @author yoshikyoto
  */
-class Main extends MyUtil{
+class Main {
 	public static void main(String[] args) throws Exception{
-		while (true) {
-			// 入力は独自クラスを使っている
-			int[] in = readIntMap();
-			if(in[0] + in[1] == 0) break;
-			cnt = 0;
-			max = 0;
-			check(10, in[0], in[1], 0, "");
-			if(cnt == 0){
-				System.out.println("error");
-			}else if (cnt > 1){
-				System.out.println("rejected");
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		while(true){
+			char trump = br.readLine().charAt(0);
+			if(trump == '#') break;
+			
+			// cards[player][turn]
+			String[][] cards = new String[4][13];
+			for (int i = 0; i < 4; i++) {
+				cards[i] = br.readLine().split(" ");
+			}
+
+			int leader = 0; // 最初のリーダーはNorth
+			int[] win_count = new int[4];
+			
+			for(int turn = 0; turn < 13; turn++){
+				char lead_suit = getSuit(cards[leader][turn]);
+				int winner = 0, max_point = 0;
+
+				for(int player = 0; player < 4; player++){
+					char suit = getSuit(cards[player][turn]);
+					if(suit != lead_suit && suit != trump) continue;
+
+					int point = getInt(cards[player][turn]);
+					if(suit == trump) point += 15;
+					if(max_point < point){
+						max_point = point;
+						winner = player;
+					}
+				}
+
+				win_count[winner]++;
+				leader = winner;
+			}
+
+			// 最終的に誰が勝ったか
+			int ns = win_count[0] + win_count[2];
+			int ew = win_count[1] + win_count[3];
+
+			if(ns > ew){
+				System.out.println("NS " + (ns - 6));
 			}else{
-				System.out.println(max + " " + ans);
+				System.out.println("EW " + (ew - 6));
 			}
 		}
 	}
-	
-	static int cnt = 0;
-	static int max = 0;
-	static String ans = "";
-	static void check(int i, int t, int num, int sum, String buf){
-		if(num < i){
-			sum += num;
-			buf = num + buf;
-			if(max < sum && sum <= t){
-				max = sum;
-				ans = buf;
-				cnt = 1;
-			}else if(max == sum){
-				cnt++;
-			}
-			return;
+
+	static char getSuit(String str){
+		return str.charAt(1);
+	}
+
+	static int getInt(String str){
+		char c = str.charAt(0);
+		switch(c){
+		case 'T': return 10;
+		case 'J': return 11;
+		case 'Q': return 12;
+		case 'K': return 13;
+		case 'A': return 14;
+		default: return (int)(c - '0');
 		}
-		
-		// iで分断しない場合
-		// System.out.println(num + " を分断しない");
-		check(i*10, t, num, sum, buf);
-		
-		// iで分断する場合
-		int next_num = num / i;
-		int bundan = num % i;
-		int next_sum = sum + bundan;
-		// System.out.println(num + " を " + next_num + " と分断");
-		check(10, t, next_num, next_sum, " " + bundan + buf);
 	}
 }
 
