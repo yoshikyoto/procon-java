@@ -6,69 +6,83 @@ import java.math.BigInteger;
 /**
  * @author yoshikyoto
  */
-class Main {
+class Main extends MyUtil{
 	public static void main(String[] args) throws Exception{
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		while(true){
-			char trump = br.readLine().charAt(0);
-			if(trump == '#') break;
+			int n = readInt();
+			if(n == 0) break;
 			
-			// cards[player][turn]
-			String[][] cards = new String[4][13];
-			for (int i = 0; i < 4; i++) {
-				cards[i] = br.readLine().split(" ");
-			}
-
-			int leader = 0; // 最初のリーダーはNorth
-			int[] win_count = new int[4];
-			
-			for(int turn = 0; turn < 13; turn++){
-				char lead_suit = getSuit(cards[leader][turn]);
-				int winner = 0, max_point = 0;
-
-				for(int player = 0; player < 4; player++){
-					char suit = getSuit(cards[player][turn]);
-					if(suit != lead_suit && suit != trump) continue;
-
-					int point = getInt(cards[player][turn]);
-					if(suit == trump) point += 15;
-					if(max_point < point){
-						max_point = point;
-						winner = player;
-					}
+			Guy[] guys = new Guy[n];
+			for(int i = 0; i < n; i++){
+				int m = readIntMap(0);
+				int l = readIntMap(1);
+				
+				Guy guy = new Guy();
+				guy.l = l;
+				guys[i] = guy;
+				for(int j = 0; j < m; j++){
+					int[] in = readIntMap();
+					guy.start.add(in[0] - 6);
+					guy.end.add(in[1] - 6);
 				}
-
-				win_count[winner]++;
-				leader = winner;
 			}
-
-			// 最終的に誰が勝ったか
-			int ns = win_count[0] + win_count[2];
-			int ew = win_count[1] + win_count[3];
-
-			if(ns > ew){
-				System.out.println("NS " + (ns - 6));
-			}else{
-				System.out.println("EW " + (ew - 6));
+			
+			System.out.println(dfs(guys, 0, n, new boolean[16]));
+		}
+	}
+	
+	static int dfs(Guy[] guys, int i, int n, boolean[] schedule){
+		if(i >= n) return 0;
+		// 使わない場合
+		int ret0 = dfs(guys, i + 1, n, schedule);
+		
+		// 使える場合は使ってもいい
+		int ret1 = 0;
+		if(canFill(schedule, guys[i])){
+			boolean[] schedule_cp = cp(schedule);
+			fill(schedule_cp, guys[i]);
+			ret1 = guys[i].l + dfs(guys, i + 1, n, schedule_cp);
+		}
+		
+		return Math.max(ret0, ret1);
+	}
+	
+	/**
+	 * 予定を入れられるならtrue,入れられないならfalse
+	 */
+	static boolean canFill(boolean[] schedule, Guy guy){
+		for(int i = 0; i < guy.start.size(); i++){
+			int s = guy.start.get(i);
+			int e = guy.end.get(i);
+			for(int j= s; j < e; j++){
+				if(schedule[j]) return false;
+			}
+		}
+		return true;
+	}
+	
+	static void fill(boolean[] schedule, Guy guy){
+		for(int i = 0; i < guy.start.size(); i++){
+			int s = guy.start.get(i);
+			int e = guy.end.get(i);
+			for(int j = s; j < e; j++){
+				schedule[j] = true;
 			}
 		}
 	}
-
-	static char getSuit(String str){
-		return str.charAt(1);
+	
+	public static boolean[] cp(boolean[] a) {
+		boolean[] b = new boolean[a.length];
+		for (int i = 0; i < a.length; i++)
+			b[i] = a[i];
+		return b;
 	}
+}
 
-	static int getInt(String str){
-		char c = str.charAt(0);
-		switch(c){
-		case 'T': return 10;
-		case 'J': return 11;
-		case 'Q': return 12;
-		case 'K': return 13;
-		case 'A': return 14;
-		default: return (int)(c - '0');
-		}
-	}
+class Guy{
+	int l;
+	ArrayList<Integer> start = new ArrayList<Integer>();
+	ArrayList<Integer> end = new ArrayList<Integer>();
 }
 
 // --- ここから下はライブラリ ----------
