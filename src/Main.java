@@ -7,79 +7,70 @@ import java.math.BigInteger;
  * @author yoshikyoto
  */
 class Main extends MyUtil{
-	static int n;
+	
+	
 	public static void main(String[] args) throws Exception{
-		while(true){
-			n = readInt();
-			if(n == 0) break;
-			ArrayList<Node> list = new ArrayList<Node>();
-			for(int i = 0; i < n; i++){
-				Node node = new Node(readLine());
-				list.add(node);
-			}
-			
-			for(int i = 0; i < n; i++){
-				System.out.println(list.get(i));
-			}
-		}
-	}
-	
-}
+		// 入出力は自作クラスを使って行っている
+		int n = readIntMap(0);
+		int w = readIntMap(1);
+		int h = readIntMap(2);
 
-
-class Node{
-	static Node prev;
-	// nextは兄弟ノード
-	Node parent, child, next;
-	int depth = 0;
-	String name;
-	
-	public Node(String str){
-		int i = 0;
-		while(str.charAt(i) =='.')
-			i++;
-		depth = i;
-		name = str.substring(i);
+		int[] ww = new int[w+1];
+		int[] hh = new int[h+1];
 		
-		while(prev != null){
-			if(prev.depth == depth - 1)
-				parent = prev;
+		for (int i = 0; i < n; i++) {
+			int x = readIntMap(0);
+			int y = readIntMap(1);
+			int l = readIntMap(2);
 			
-			if(prev.depth == depth){
-				prev.next = this;
-				parent = prev.parent;
-				break;
-			}
-			prev = prev.parent;
+			ww[Math.max(0, x-l)]++;
+			ww[Math.min(w, x+l)]--;
+			hh[Math.max(0, y-l)]++;
+			hh[Math.min(h, y+l)]--;
 		}
-		prev = this;
-	}
-	
-	@Override
-	public String toString(){
-		StringBuffer buf = new StringBuffer(name);
-		if(depth != 0){
-			buf.insert(0, '+');
-			if(parent.parent != null){
-				parent.appendString(buf);
-			}
-		}
-		return buf.toString();
-	}
-	
-	public void appendString(StringBuffer buf){
-		if(parent == null) return;
-
-		if(next != null){
-			buf.insert(0, '|');
+		
+		if(check(ww) || check(hh)){
+			System.out.println("Yes");
 		}else{
-			buf.insert(0, ' ');
+			System.out.println("No");
 		}
-		if(parent != null){
-			parent.appendString(buf);
+	}
+	
+	static boolean check(int[] arr){
+		int l = arr.length - 1;
+		int sum = 0;
+		for(int i = 0; i < l; i++){
+			sum += arr[i];
+			if(sum == 0) return false;
 		}
+		return true;
 	}
 }
+
+class BinaryIndexedTree{
+    int n;
+    int[] bit;
+    BinaryIndexedTree(int n){
+        this.n = n;
+        bit = new int[n+1];
+    }
+    int sum(int i){
+        int sum = 0;
+        while(i > 0){
+            sum += bit[i];
+            i -= i & -i;
+        }
+        return sum;
+    }
+    void add(int i, int v){
+        while(i <= n){
+            bit[i] += v;
+            i += i & -i;
+        }
+    }
+}
+
+
 
 // --- ここから下はライブラリ ----------
 /**
