@@ -7,82 +7,78 @@ import java.math.BigInteger;
  * @author yoshikyoto
  */
 class Main extends MyUtil{
+	static int n;
 	public static void main(String[] args) throws Exception{
 		while(true){
-			int n = readInt();
+			n = readInt();
 			if(n == 0) break;
-			
-			Guy[] guys = new Guy[n];
+			ArrayList<Node> list = new ArrayList<Node>();
 			for(int i = 0; i < n; i++){
-				int m = readIntMap(0);
-				int l = readIntMap(1);
-				
-				Guy guy = new Guy();
-				guy.l = l;
-				guys[i] = guy;
-				for(int j = 0; j < m; j++){
-					int[] in = readIntMap();
-					guy.start.add(in[0] - 6);
-					guy.end.add(in[1] - 6);
-				}
+				Node node = new Node(readLine());
+				list.add(node);
 			}
 			
-			System.out.println(dfs(guys, 0, n, new boolean[16]));
-		}
-	}
-	
-	static int dfs(Guy[] guys, int i, int n, boolean[] schedule){
-		if(i >= n) return 0;
-		// 使わない場合
-		int ret0 = dfs(guys, i + 1, n, schedule);
-		
-		// 使える場合は使ってもいい
-		int ret1 = 0;
-		if(canFill(schedule, guys[i])){
-			boolean[] schedule_cp = cp(schedule);
-			fill(schedule_cp, guys[i]);
-			ret1 = guys[i].l + dfs(guys, i + 1, n, schedule_cp);
-		}
-		
-		return Math.max(ret0, ret1);
-	}
-	
-	/**
-	 * 予定を入れられるならtrue,入れられないならfalse
-	 */
-	static boolean canFill(boolean[] schedule, Guy guy){
-		for(int i = 0; i < guy.start.size(); i++){
-			int s = guy.start.get(i);
-			int e = guy.end.get(i);
-			for(int j= s; j < e; j++){
-				if(schedule[j]) return false;
-			}
-		}
-		return true;
-	}
-	
-	static void fill(boolean[] schedule, Guy guy){
-		for(int i = 0; i < guy.start.size(); i++){
-			int s = guy.start.get(i);
-			int e = guy.end.get(i);
-			for(int j = s; j < e; j++){
-				schedule[j] = true;
+			for(int i = 0; i < n; i++){
+				System.out.println(list.get(i));
 			}
 		}
 	}
 	
-	public static boolean[] cp(boolean[] a) {
-		boolean[] b = new boolean[a.length];
-		for (int i = 0; i < a.length; i++)
-			b[i] = a[i];
-		return b;
-	}
 }
 
-class Guy{
-	int l;
-	ArrayList<Integer> start = new ArrayList<Integer>();
-	ArrayList<Integer> end = new ArrayList<Integer>();
+
+class Node{
+	static Node prev;
+	// nextは兄弟ノード
+	Node parent, child, next;
+	int depth = 0;
+	String name;
+	
+	public Node(String str){
+		int i = 0;
+		while(str.charAt(i) =='.')
+			i++;
+		depth = i;
+		name = str.substring(i);
+		
+		while(prev != null){
+			if(prev.depth == depth - 1)
+				parent = prev;
+			
+			if(prev.depth == depth){
+				prev.next = this;
+				parent = prev.parent;
+				break;
+			}
+			prev = prev.parent;
+		}
+		prev = this;
+	}
+	
+	@Override
+	public String toString(){
+		StringBuffer buf = new StringBuffer(name);
+		if(depth != 0){
+			buf.insert(0, '+');
+			if(parent.parent != null){
+				parent.appendString(buf);
+			}
+		}
+		return buf.toString();
+	}
+	
+	public void appendString(StringBuffer buf){
+		if(parent == null) return;
+
+		if(next != null){
+			buf.insert(0, '|');
+		}else{
+			buf.insert(0, ' ');
+		}
+		if(parent != null){
+			parent.appendString(buf);
+		}
+	}
 }
 
 // --- ここから下はライブラリ ----------
