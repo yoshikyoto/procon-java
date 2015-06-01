@@ -7,43 +7,99 @@ import java.math.BigInteger;
  * @author yoshikyoto
  */
 class Main extends MyUtil{
-	
-	
 	public static void main(String[] args) throws Exception{
 		// 入出力は自作クラスを使って行っている
 		int n = readIntMap(0);
-		int w = readIntMap(1);
-		int h = readIntMap(2);
+		int m = readIntMap(1);
+		int[] b = readIntMap();
+		int[] p = readIntMap();
+		
+		int[][] rl_p = new int[2][n];
+		
+		int bit = 0;
+		int index = 0;
+		for(int i = 0; i < m; i++){
+			for(int j = 0; j < p[i]; j++){
+				rl_p[bit][index] = 1;
+				index++;
+			}
+			bit = (bit + 1) % 2;
+		}
+		
+		// zero_start_p は、0からスタートしてランレングス符号化したもの
+		// one_start_p は1からスタート
+		int[] zero_start_p = rl_p[1];
+		int[] one_start_p = rl_p[0];
+		
+		int ans = 1 << 28;
+		
+		// すくなくとも、1と0の数が等しくないと、swapによって一致させられない
+		if(popupBitCount(b) == popupBitCount(zero_start_p)){
+			ans = Math.min(ans, solve(b, zero_start_p));
+		}
 
-		int[] ww = new int[w+1];
-		int[] hh = new int[h+1];
-		
-		for (int i = 0; i < n; i++) {
-			int x = readIntMap(0);
-			int y = readIntMap(1);
-			int l = readIntMap(2);
-			
-			ww[Math.max(0, x-l)]++;
-			ww[Math.min(w, x+l)]--;
-			hh[Math.max(0, y-l)]++;
-			hh[Math.min(h, y+l)]--;
+		if(popupBitCount(b) == popupBitCount(one_start_p)){
+			ans = Math.min(ans, solve(b, one_start_p));
 		}
 		
-		if(check(ww) || check(hh)){
-			System.out.println("Yes");
-		}else{
-			System.out.println("No");
-		}
+		System.out.println(ans);
 	}
 	
-	static boolean check(int[] arr){
-		int l = arr.length - 1;
+	/**
+	 * ランレングス符号化された2つの配列を入力とし、
+	 * 2つを一致させるために必要なswapの回数を求める
+	 * @return swap回数
+	 */
+	static int solve(int[] b, int[] p){
+		int len = b.length;
 		int sum = 0;
-		for(int i = 0; i < l; i++){
-			sum += arr[i];
-			if(sum == 0) return false;
+		for (int i = 0; i < len; i++) {
+			if(b[i] != p[i]){
+				sum += searchSwap(p, i);
+			}
 		}
-		return true;
+		return sum;
+	}
+	
+	/**
+	 * iより右の位置で、一番近くで入れ替えられる場所を探して入れ替える。
+	 * @return 入れ替えるのに必要なswapの回数
+	 */
+	static int searchSwap(int[] p, int i){
+		int len = p.length;
+		for(int j = i + 1; j < len; j++){
+			if(p[i] != p[j]){
+				return swap(p, i, j);
+			}
+		}
+		return 0;
+	}
+	
+	/**
+	 * iとjを入れ替えるために、隣通しのswapをひたすら行う
+	 * @return swapの回数
+	 */
+	static int swap(int[] p, int i, int j){
+		int cnt = 0;
+		for(int k = j-1; k >= i; k--){
+			int tmp = p[k];
+			p[k] = p[k+1];
+			p[k+1] = tmp;
+			cnt++;
+		}
+		return cnt;
+	}
+	
+	/**
+	 * 配列を入力として、1が立っているbitの数を数える
+	 */
+	static int popupBitCount(int[] arr){
+		int len = arr.length;
+		int sum = 0;
+		for(int i = 0; i < len; i++){
+			if(arr[i] != 0) sum++;
+		}
+		return sum;
 	}
 }
 
