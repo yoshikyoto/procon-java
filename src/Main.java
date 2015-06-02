@@ -6,100 +6,119 @@ import java.math.BigInteger;
 /**
  * @author yoshikyoto
  */
-class Main extends MyUtil{
+class Main {
 	public static void main(String[] args) throws Exception{
-		// 入出力は自作クラスを使って行っている
-		int n = readIntMap(0);
-		int m = readIntMap(1);
-		int[] b = readIntMap();
-		int[] p = readIntMap();
+		Scanner sc = new Scanner(new InputStreamReader(System.in));
+		// 1行目
+		int w = sc.nextInt();
+		int h = sc.nextInt();
+		int n = sc.nextInt();
+		int ww = 2*w+1;
+		int hh = 2*h+1;
 		
-		int[][] rl_p = new int[2][n];
+		// 2行目
+		int start_x = sc.nextInt() * 2;
+		int start_y = sc.nextInt() * 2;
+		int end_x = sc.nextInt() * 2;
+		int end_y = sc.nextInt() * 2;
+		int[][] table = new int[ww][hh];
 		
-		int bit = 0;
-		int index = 0;
-		for(int i = 0; i < m; i++){
-			for(int j = 0; j < p[i]; j++){
-				rl_p[bit][index] = 1;
-				index++;
+		for(int i = 0; i < n; i++){
+			// それぞれのスタッフの動き
+			int x = sc.nextInt() * 2 + 1;
+			int y = sc.nextInt() * 2 + 1;
+			int t = sc.nextInt();
+			char[] seq = sc.next().toCharArray();
+			int len = seq.length;
+			
+			for(int j = 0; j < len*t; j++){
+				char c = seq[j%len];
+				int[] d = getD(c);
+				int next_x = x + d[0] * 2;
+				int next_y = y + d[1] * 2;
+				if(inside(next_x, next_y, ww, hh)){
+					table[x+d[0]][y+d[1]]++;
+					x = next_x;
+					y = next_y;
+				}
 			}
-			bit = (bit + 1) % 2;
 		}
 		
-		// zero_start_p は、0からスタートしてランレングス符号化したもの
-		// one_start_p は1からスタート
-		int[] zero_start_p = rl_p[1];
-		int[] one_start_p = rl_p[0];
+		// 次はケーブルのダイクストラ
+		Coordinate start = new Coordinate(start_x, start_y, 1);
+		PriorityQueue<Coordinate> q = new PriorityQueue<Coordinate>(w*h, new CComp());
+		q.add(start);
+		table[start.x][start.y] = 1;
 		
-		int ans = 1 << 28;
-		
-		// すくなくとも、1と0の数が等しくないと、swapによって一致させられない
-		if(popupBitCount(b) == popupBitCount(zero_start_p)){
-			ans = Math.min(ans, solve(b, zero_start_p));
+		int[] dx = {-1, 1, 0, 0};
+		int[] dy = {0, 0, -1, 1};
+		int ans = 0;
+		while(!q.isEmpty()){
+			Coordinate curr = q.poll();
+			if(table[curr.x][curr.y] < curr.cost) continue;
+			if(curr.x == end_x && curr.y == end_y){
+				ans = curr.cost;
+				break;
+			}
+			for(int k = 0; k < 4; k++){
+				Coordinate next = new Coordinate(curr.x + dx[k]*2, curr.y + dy[k]*2, curr.cost);
+				if(inside(next.x, next.y, ww, hh)){
+					next.cost += table[curr.x + dx[k]][curr.y + dy[k]];
+					if(table[next.x][next.y] == 0L || table[next.x][next.y] > next.cost){
+						q.add(next);
+						table[next.x][next.y] = next.cost;
+					}
+				}
+			}
 		}
+		// ここまでダイクストラ
+		System.out.println(ans - 1);
+	}
+	
+	static boolean inside(int x, int y, int w, int h) {
+		return 0 <= x && x < w && 0 <= y && y < h;
+	}
+	
+	static int[] getD(char c){
+		int[] ret = new int[2];
+		switch (c) {
+		case 'U':
+			ret[1] = -1;
+			break;
+		case 'D':
+			ret[1] = 1;
+			break;
+		case 'L':
+			ret[0] = -1;
+			break;
+		case 'R':
+			ret[0] = 1;
+			break;
+		}
+		return ret;
+	}
+}
 
-		if(popupBitCount(b) == popupBitCount(one_start_p)){
-			ans = Math.min(ans, solve(b, one_start_p));
-		}
-		
-		System.out.println(ans);
+class Coordinate{
+	int x, y;
+	int cost;
+	Coordinate(int x, int y, int cost){
+		this.x = x;
+		this.y = y;
+		this.cost = cost;
 	}
 	
-	/**
-	 * ランレングス符号化された2つの配列を入力とし、
-	 * 2つを一致させるために必要なswapの回数を求める
-	 * @return swap回数
-	 */
-	static int solve(int[] b, int[] p){
-		int len = b.length;
-		int sum = 0;
-		for (int i = 0; i < len; i++) {
-			if(b[i] != p[i]){
-				sum += searchSwap(p, i);
-			}
-		}
-		return sum;
+	public String toString(){
+		return "(" + x + ", " + y + ")";
 	}
-	
-	/**
-	 * iより右の位置で、一番近くで入れ替えられる場所を探して入れ替える。
-	 * @return 入れ替えるのに必要なswapの回数
-	 */
-	static int searchSwap(int[] p, int i){
-		int len = p.length;
-		for(int j = i + 1; j < len; j++){
-			if(p[i] != p[j]){
-				return swap(p, i, j);
-			}
-		}
-		return 0;
-	}
-	
-	/**
-	 * iとjを入れ替えるために、隣通しのswapをひたすら行う
-	 * @return swapの回数
-	 */
-	static int swap(int[] p, int i, int j){
-		int cnt = 0;
-		for(int k = j-1; k >= i; k--){
-			int tmp = p[k];
-			p[k] = p[k+1];
-			p[k+1] = tmp;
-			cnt++;
-		}
-		return cnt;
-	}
-	
-	/**
-	 * 配列を入力として、1が立っているbitの数を数える
-	 */
-	static int popupBitCount(int[] arr){
-		int len = arr.length;
-		int sum = 0;
-		for(int i = 0; i < len; i++){
-			if(arr[i] != 0) sum++;
-		}
-		return sum;
+}
+
+/**
+ * 昇順
+ */
+class CComp implements Comparator<Coordinate> {
+	public int compare(Coordinate a, Coordinate b) {
+		return a.cost - b.cost;
 	}
 }
 
@@ -125,7 +144,6 @@ class BinaryIndexedTree{
         }
     }
 }
-
 
 
 // --- ここから下はライブラリ ----------
