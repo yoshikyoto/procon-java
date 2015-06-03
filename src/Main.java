@@ -9,116 +9,129 @@ import java.math.BigInteger;
 class Main {
 	public static void main(String[] args) throws Exception{
 		Scanner sc = new Scanner(new InputStreamReader(System.in));
-		// 1行目
-		int w = sc.nextInt();
-		int h = sc.nextInt();
-		int n = sc.nextInt();
-		int ww = 2*w+1;
-		int hh = 2*h+1;
 		
-		// 2行目
-		int start_x = sc.nextInt() * 2;
-		int start_y = sc.nextInt() * 2;
-		int end_x = sc.nextInt() * 2;
-		int end_y = sc.nextInt() * 2;
-		int[][] table = new int[ww][hh];
-		
-		for(int i = 0; i < n; i++){
-			// それぞれのスタッフの動き
-			int x = sc.nextInt() * 2 + 1;
-			int y = sc.nextInt() * 2 + 1;
-			int t = sc.nextInt();
-			char[] seq = sc.next().toCharArray();
-			int len = seq.length;
+		while(true){	
+			int n = sc.nextInt();
+			if(n == 0) break;
 			
-			for(int j = 0; j < len*t; j++){
-				char c = seq[j%len];
-				int[] d = getD(c);
-				int next_x = x + d[0] * 2;
-				int next_y = y + d[1] * 2;
-				if(inside(next_x, next_y, ww, hh)){
-					table[x+d[0]][y+d[1]]++;
-					x = next_x;
-					y = next_y;
+			boolean[][] schedule = new boolean[n][30];
+			
+			for(int i = 0; i < n; i++){
+				int m = sc.nextInt();
+				for (int j = 0; j < m; j++) {
+					schedule[i][sc.nextInt() - 1] = true;
 				}
 			}
+			
+			System.out.println(solve(n, schedule));
+		}
+	}
+	
+	static int solve(int n, boolean[][] schedule){
+		boolean[][] canHave = new boolean[n][n];
+		for (int i = 0; i < n; i++) {
+			canHave[i][i] = true;
 		}
 		
-		// 次はケーブルのダイクストラ
-		Coordinate start = new Coordinate(start_x, start_y, 1);
-		PriorityQueue<Coordinate> q = new PriorityQueue<Coordinate>(w*h, new CComp());
-		q.add(start);
-		table[start.x][start.y] = 1;
-		
-		int[] dx = {-1, 1, 0, 0};
-		int[] dy = {0, 0, -1, 1};
-		int ans = 0;
-		while(!q.isEmpty()){
-			Coordinate curr = q.poll();
-			if(table[curr.x][curr.y] < curr.cost) continue;
-			if(curr.x == end_x && curr.y == end_y){
-				ans = curr.cost;
-				break;
-			}
-			for(int k = 0; k < 4; k++){
-				Coordinate next = new Coordinate(curr.x + dx[k]*2, curr.y + dy[k]*2, curr.cost);
-				if(inside(next.x, next.y, ww, hh)){
-					next.cost += table[curr.x + dx[k]][curr.y + dy[k]];
-					if(table[next.x][next.y] == 0L || table[next.x][next.y] > next.cost){
-						q.add(next);
-						table[next.x][next.y] = next.cost;
+		for (int day = 0; day < 30; day++) {
+			// day日にaさんとbさんの予定が合う場合は地図を交換できる
+			for (int a = 0; a < n; a++) {
+				for (int b = 0; b < a; b++) {
+					if(schedule[a][day] && schedule[b][day]){
+						// 地図をシェアする
+						share(n, canHave, a, b);
 					}
 				}
 			}
+			
+			// 地図は集まったかどうかをチェックする
+			if(check(n, canHave)){
+				return day + 1;
+			}
 		}
-		// ここまでダイクストラ
-		System.out.println(ans - 1);
+		return -1;
 	}
 	
-	static boolean inside(int x, int y, int w, int h) {
-		return 0 <= x && x < w && 0 <= y && y < h;
-	}
-	
-	static int[] getD(char c){
-		int[] ret = new int[2];
-		switch (c) {
-		case 'U':
-			ret[1] = -1;
-			break;
-		case 'D':
-			ret[1] = 1;
-			break;
-		case 'L':
-			ret[0] = -1;
-			break;
-		case 'R':
-			ret[0] = 1;
-			break;
+	static void share(int n, boolean[][] canHave, int a, int b){
+		for (int i = 0; i < n; i++) {
+			boolean tmp = canHave[a][i] || canHave[b][i];
+			canHave[a][i] = tmp;
+			canHave[b][i] = tmp;
 		}
-		return ret;
-	}
-}
-
-class Coordinate{
-	int x, y;
-	int cost;
-	Coordinate(int x, int y, int cost){
-		this.x = x;
-		this.y = y;
-		this.cost = cost;
 	}
 	
-	public String toString(){
-		return "(" + x + ", " + y + ")";
+	/**
+	 * 誰か一人でも、地図を全部集められる人がいたらtrue
+	 */
+	static boolean check(int n, boolean[][] canHave){
+		for (int person = 0; person < n; person++) {
+			if(check(n, person, canHave)) return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * person番目の人が地図を全部集められるならtrue
+	 */
+	static boolean check(int n, int person, boolean[][] canHave){
+		for (int i = 0; i < n; i++) {
+			if(!canHave[person][i]) return false;
+		}
+		return true;
 	}
 }
 
 /**
- * 昇順
+ * UnionFindTree 
+ * @author yoshikyoto
  */
-class CComp implements Comparator<Coordinate> {
-	public int compare(Coordinate a, Coordinate b) {
-		return a.cost - b.cost;
+class UnionFindTree {
+	public int[] parent, rank;
+	public int n;
+	public int count;
+
+	// 初期化
+	UnionFindTree(int n) {
+		this.n = n;
+		count = n;
+		parent = new int[n];
+		rank = new int[n];
+		for (int i = 0; i < n; i++) {
+			parent[i] = i;
+			rank[i] = 0;
+		}
+	}
+
+	// 根を求める
+	int find(int x) {
+		if (parent[x] == x) {
+			return x;
+		} else {
+			return parent[x] = find(parent[x]);
+		}
+	}
+
+	// xとyの集合を結合
+	void unite(int x, int y) {
+		x = find(x);
+		y = find(y);
+		if (x == y) {
+			return;
+		}
+		if (rank[x] < rank[y]) {
+			parent[x] = y;
+			count--;
+		} else {
+			parent[y] = x;
+			if (rank[x] == rank[y])
+				rank[x]++;
+			count--;
+		}
+	}
+
+	// xとyが同じ集合か
+	boolean same(int x, int y) {
+		return find(x) == find(y);
 	}
 }
 
