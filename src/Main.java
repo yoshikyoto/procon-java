@@ -3,101 +3,15 @@ import java.util.*;
 import java.lang.ArrayIndexOutOfBoundsException;
 import java.math.BigInteger;
 
+import topcoder.SRM660Div2.PrivateD2party;
+
 /**
  * @author yoshikyoto
  */
 class Main extends MyUtil{
 	public static void main(String[] args) throws Exception{
-		int n = readInt();
-		for (int i = 0; i < n; i++) {
-			int h = readIntMap(0);
-			int w = readIntMap(1);
-			char[][] c = new char[h][];
-			for (int j = 0; j < h; j++) {
-				c[j] = readLine().toCharArray();
-			}
-			if(solve(c, h, w)){
-				System.out.println("SAFE");
-			}else{
-				System.out.println("SUSPICIOUS");
-			}
-		}
-	}
-	
-	static boolean solve(char[][] c, int h, int w){
-		while(checkThisTurn(c, h, w));
-		// 全部消えたかチェック
-		for (int i = 0; i < h; i++) {
-			for (int j = 0; j < w; j++) {
-				if(c[i][j] != '.' && c[i][j] != '*'){
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-	
-	static boolean checkThisTurn(char[][] c, int h, int w){
-		HashSet<Character> checked = new HashSet<Character>();
-		checked.add('.');
-		checked.add('*');
-		for (int i = 0; i < h; i++) {
-			for (int j = 0; j < w; j++) {
-				if(!checked.contains(c[i][j])){
-					if(checkRect(c, h, w, c[i][j])){
-						// 長方形だったら
-						return true;
-					}else{
-						// 長方形でなかったら
-					}
-				}
-				// このターンでは確認済み
-				checked.add(c[i][j]);
-			}
-		}
-		return false;
-	}
-	
-	static boolean checkRect(char[][] c, int h, int w, char target){
-		int top = h, bottom = 0, left = w, right = 0;
-		// 上下左右の端を確認
-		for (int i = 0; i < h; i++) {
-			for (int j = 0; j < w; j++) {
-				if(c[i][j] == target){
-					top = Math.min(top, i);
-					bottom = Math.max(bottom, i);
-					left = Math.min(left, j);
-					right = Math.max(right, j);
-				}
-			}
-		}
-		
-		// そこが埋まっているか確認
-		if(isFilled(c, h, w, target, top, bottom, left, right)){
-			//埋まってる
-			for(int i = top; i <= bottom; i++){
-				for(int j = left; j <= right; j++){
-					// 次からワイルとカードとして扱える
-					c[i][j] = '*';
-				}
-			}
-			return true;
-		}else{
-			//埋まってない
-			return false;
-		}
-	}
-	
-	static boolean isFilled(char[][] c, int h, int w, int target,
-			int top, int bottom, int left, int right){
-		for(int i = top; i <= bottom; i++){
-			for(int j = left; j <= right; j++){
-				if(c[i][j] != target && c[i][j] != '*'){
-					return false;
-				}
-			}
-		}
-		return true;
+		int[] a = {5,2,2,4,5,0};
+		System.out.println(new PrivateD2party().getsz(a));
 	}
 }
 
