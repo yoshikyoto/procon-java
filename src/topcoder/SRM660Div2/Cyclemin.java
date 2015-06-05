@@ -8,7 +8,6 @@ public class Cyclemin {
 			char c = s.charAt(0);
 			s = s.substring(1) + c;
 			String replaced_s = replace(s, k);
-			// System.out.println(replaced_s);
 			if(ans == null){
 				ans = replaced_s;
 			}else if(ans.compareTo(replaced_s) > 0){

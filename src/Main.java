@@ -3,15 +3,70 @@ import java.util.*;
 import java.lang.ArrayIndexOutOfBoundsException;
 import java.math.BigInteger;
 
-import topcoder.SRM660Div2.PrivateD2party;
-
 /**
  * @author yoshikyoto
  */
-class Main extends MyUtil{
+class Main {
 	public static void main(String[] args) throws Exception{
-		int[] a = {5,2,2,4,5,0};
-		System.out.println(new PrivateD2party().getsz(a));
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		int n = Integer.parseInt(br.readLine());
+		for (int i = 0; i < n; i++) {
+			Zone zone = new Zone(br.readLine());
+			System.out.println(zone.solve());
+		}
+	}
+}
+
+class Zone{
+	ArrayList<Zone> children;
+	int value = 0;
+	
+	Zone(String str){
+		str = str.substring(1, str.length() - 1);
+		
+		try{
+			// 値だったらparseInt
+			value = Integer.parseInt(str);
+		}catch(NumberFormatException e){
+			// 値じゃなかったら木構造的にparse
+			children = new ArrayList<Zone>();
+			int depth = 0;
+			int start = 0;
+			for (int i = 0; i < str.length(); i++) {
+				switch(str.charAt(i)){
+				case '[':
+					if(depth == 0) start = i;
+					depth++;
+					break;
+				case ']':
+					depth--;
+					if(depth == 0){
+						children.add(new Zone(str.substring(start, i+1)));
+					}
+					break;
+				}
+			}
+		}
+	}
+	
+	int solve(){
+		// valueは必ず奇数なのでこれでいい
+		if(value != 0) return (value + 1) / 2;
+		
+		// 再帰的にsolve
+		ArrayList<Integer> arr = new ArrayList<Integer>();
+		for(Zone child : children){
+			arr.add(child.solve());
+		}
+		
+		// 過半数を返す
+		Collections.sort(arr);
+		int sum = 0;
+		int maj = (arr.size() + 1) / 2; // arrのsizeはかならず奇数なので
+		for (int i = 0; i < maj; i++) {
+			sum += arr.get(i);
+		}
+		return sum;
 	}
 }
 

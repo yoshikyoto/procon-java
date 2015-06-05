@@ -27,8 +27,6 @@ public class PrivateD2party {
 	}
 	
 	public int dfs(Person person, int i, int loopindex){
-		// System.out.println("dfs " + loopindex + " " + i);
-		// System.out.println(person.loopindex + " " + person.cnt);
 		if(person.hate == null) return 0;
 		if(person.loopindex != 0){
 			if(person.loopindex == loopindex){
