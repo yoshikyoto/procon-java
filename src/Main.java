@@ -7,97 +7,45 @@ import java.math.BigInteger;
  * @author yoshikyoto
  */
 class Main {
+	static HashMap<String, String[]> groups;
 	public static void main(String[] args) throws Exception {
-		Scanner sc = new Scanner(new InputStreamReader(System.in));
-		int n = sc.nextInt();
-		
-		int nn = 2;
-		while(nn <= n+n) nn *= nn;
-		System.out.println(nn);
-		
-		Complex[] a = new Complex[nn];
-		Complex[] b = new Complex[nn];
-		for(int i = 0; i < nn; i++){
-			if(i < n){
-				a[i] = new Complex(sc.nextInt(), 0);
-				b[i] = new Complex(sc.nextInt(), 0);
-			}else{
-				a[i] = new Complex(0, 0);
-				b[i] = new Complex(0, 0);
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		while(true) {
+			int n = Integer.parseInt(br.readLine());
+			if(n == 0) break;
+			
+			String group = "";
+			groups = new HashMap<String, String[]>();
+			for (int i = 0; i < n; i++) {
+				String[] team = br.readLine().split(":");
+				String[] members = team[1].split("[,\\.]");
+				groups.put(team[0], members);
+				if(i == 0) group = team[0];
 			}
-		}
-		
-		/*
-		for (int i = 0; i < nn; i++) {
-			System.out.println(a[i]);
-		}
-		for (int i = 0; i < nn; i++) {
-			System.out.println(b[i]);
-		}
-		*/
-		dft(a, nn);
-		dft(b, nn);
-
-		
-		for (int i = 0; i < nn; i++) {
-			System.out.println(a[i]);
-		}
-		for (int i = 0; i < nn; i++) {
-			System.out.println(b[i]);
-		}
-		
-		Complex[] ff = new Complex[nn];
-		for (int i = 0; i < n; i++) {
-			ff[i] = a[i].mul(b[i]);
-		}
-		for(int i = n; i < nn; i++){
-			ff[i] = new Complex(0, 0);
-		}
-		
-		//inv
-		
-		for(int i = n; i < nn; i++){
-			ff[i].divide(nn);
-		}
-		
-		System.out.println(0);
-		for (int i = 0; i < 2*n-1; i++) {
-			System.out.println(ff[i]);
+			
+			HashSet<String> ans = new HashSet<String>();
+			HashSet<String> checked = new HashSet<String>();
+			getMember(group, ans, checked);
+			System.out.println(ans.size());
 		}
 	}
 	
 	/**
-	 * 高速フーリエ変換
-	 * @param f
-	 * @param nは2のx乗であることが前提となっている
+	 * ansに再帰的にメンバーを突っ込んでいく
 	 */
-	static void dft(Complex[] f, int n){
-		if(n == 1){
+	static void getMember(String name, HashSet<String> set, HashSet<String> checked){
+		if(checked.contains(name)) return;
+		checked.add(name);
+		if(!groups.containsKey(name)) {
+			set.add(name);
 			return;
 		}
-		
-		Complex[] f0 = new Complex[n/2];
-		Complex[] f1 = new Complex[n/2];
-		for (int i = 0; i < n/2; i++) {
-			f0[i] = f[2*i];
-			f1[i] = f[2*i+1];
-		}
-		dft(f0, n/2);
-		dft(f1, n/2);
-
-
-		Complex zeta = new Complex(
-				Math.cos(2 * Math.PI / n),
-				Math.sin(2 * Math.PI / n));
-		
-		Complex powZeta = Complex.I;
-		
-		for (int i = 0; i < n; i++) {
-			f[i] = f0[i % (n/2)].add(powZeta.mul(f1[i % (n/2)]));
-			powZeta.mul(zeta);
+		String[] members = groups.get(name);
+		int len = members.length;
+		for (int i = 0; i < len; i++) {
+			getMember(members[i], set, checked);
 		}
 	}
-	
 }
 
 /**

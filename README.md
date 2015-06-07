@@ -1,9 +1,16 @@
-プロコンで使えるアルゴリズム実装 Java
+プロコンで使えるアルゴリズム Java
 ====
 
 ## ブログ
 
 http://yoshiki-utakata.hatenablog.com/
+
+## 基本アルゴリズム
+
+### 深さ優先探索（再帰）
+
+* http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1305
+  * http://yoshiki-utakata.hatenablog.com/entry/2015/06/07/235837
 
 
 ## グラフアルゴリズム
