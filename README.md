@@ -1,7 +1,7 @@
-プロコンで使えるアルゴリズム Java辺
+プロコンで使えるアルゴリズム実装 Java
 ====
 
-# ブログ
+## ブログ
 
 http://yoshiki-utakata.hatenablog.com/
 
