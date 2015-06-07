@@ -10,6 +10,7 @@ http://yoshiki-utakata.hatenablog.com/
 ### 深さ優先探索（再帰）
 
 * http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1305
+  * 文字列操作が必要だが一応再帰
   * http://yoshiki-utakata.hatenablog.com/entry/2015/06/07/235837
 
 
@@ -38,3 +39,15 @@ static void warshallFloyd(int[][] g, int n){
 	}
 }
 ```
+
+## Union-Find
+
+### 最小全域木
+
+連結な無向グラフにおいて、すべての接点を連結するグラフ（木になる）のうち辺の重みの総和が最小になるもの。
+プリム法というアルゴリズムもある
+
+* http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1127
+  * 典型的なの
+  * http://yoshiki-utakata.hatenablog.com/entry/2015/06/08/011704
+

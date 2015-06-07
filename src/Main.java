@@ -9,42 +9,157 @@ import java.math.BigInteger;
 class Main {
 	static HashMap<String, String[]> groups;
 	public static void main(String[] args) throws Exception {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		Scanner sc = new Scanner(new InputStreamReader(System.in));
 		while(true) {
-			int n = Integer.parseInt(br.readLine());
+			int n = sc.nextInt();
 			if(n == 0) break;
 			
-			String group = "";
-			groups = new HashMap<String, String[]>();
+			Cell[] cell = new Cell[n];
 			for (int i = 0; i < n; i++) {
-				String[] team = br.readLine().split(":");
-				String[] members = team[1].split("[,\\.]");
-				groups.put(team[0], members);
-				if(i == 0) group = team[0];
+				double x = sc.nextDouble();
+				double y = sc.nextDouble();
+				double z = sc.nextDouble();
+				double r = sc.nextDouble();
+				cell[i] = new Cell(x, y, z, r);
 			}
 			
-			HashSet<String> ans = new HashSet<String>();
-			HashSet<String> checked = new HashSet<String>();
-			getMember(group, ans, checked);
-			System.out.println(ans.size());
+			ArrayList<Isle> arr = new ArrayList<Isle>();
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < i; j++) {
+					// コストを求める。
+					double xx = sq(cell[i].x - cell[j].x);
+					double yy = sq(cell[i].y - cell[j].y);
+					double zz = sq(cell[i].z - cell[j].z);
+					double dist = Math.sqrt(xx + yy + zz) - Math.abs(cell[i].r + cell[j].r);
+					dist = Math.max(0, dist);
+					Isle isle = new Isle(i, j, dist);
+					arr.add(isle);
+				}
+			}
+			
+			// コストでソート
+			Collections.sort(arr, new IsleComp());
+			
+			int nn = arr.size();
+			double ans = 0;
+			UnionFindTree uft = new UnionFindTree(nn+1);
+			for (int i = 0; i < nn; i++) {
+				Isle isle = arr.get(i);
+				if(uft.same(isle.x, isle.y)) continue;
+				// sameでなければcostを払って連結
+				ans += isle.cost;
+				uft.unite(isle.x, isle.y);
+			}
+			
+			System.out.printf("%.3f\n", ans);
 		}
 	}
-	
+
 	/**
-	 * ansに再帰的にメンバーを突っ込んでいく
+	 * 二乗
 	 */
-	static void getMember(String name, HashSet<String> set, HashSet<String> checked){
-		if(checked.contains(name)) return;
-		checked.add(name);
-		if(!groups.containsKey(name)) {
-			set.add(name);
+	public static double sq(double d) {
+		return d * d;
+	}
+}
+
+/**
+ * セル
+ */
+class Cell {
+	double x, y, z, r;
+
+	public Cell(double x, double y, double z, double r) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.r = r;
+	}
+}
+
+/**
+ * セルをコストでソートする用
+ * @author yoshiyuki_sakamoto
+ *
+ */
+class Isle {
+	int x, y;
+	double cost;
+	public Isle(int x, int y, double dist) {
+		this.x = x;
+		this.y = y;
+		this.cost = dist;
+	}
+	@Override
+	public String toString() {
+		return x + " " + y + " " + cost;
+	}
+}
+
+class IsleComp implements Comparator<Isle> {
+	@Override
+	public int compare(Isle a, Isle b) {
+		if(a.cost == b.cost){
+			return 0;
+		}else if(a.cost > b.cost){
+			return 1;
+		}else{
+			return -1;
+		}
+	}
+}
+
+/**
+ * UnionFindTree 
+ * @author yoshikyoto
+ */
+class UnionFindTree {
+	public int[] parent, rank;
+	public int n;
+	public int count;
+
+	// 初期化
+	UnionFindTree(int n) {
+		this.n = n;
+		count = n;
+		parent = new int[n];
+		rank = new int[n];
+		for (int i = 0; i < n; i++) {
+			parent[i] = i;
+			rank[i] = 0;
+		}
+	}
+
+	// 根を求める
+	int find(int x) {
+		if (parent[x] == x) {
+			return x;
+		} else {
+			return parent[x] = find(parent[x]);
+		}
+	}
+
+	// xとyの集合を結合
+	void unite(int x, int y) {
+		x = find(x);
+		y = find(y);
+		if (x == y) {
 			return;
 		}
-		String[] members = groups.get(name);
-		int len = members.length;
-		for (int i = 0; i < len; i++) {
-			getMember(members[i], set, checked);
+		if (rank[x] < rank[y]) {
+			parent[x] = y;
+			count--;
+		} else {
+			parent[y] = x;
+			if (rank[x] == rank[y])
+				rank[x]++;
+			count--;
 		}
+	}
+
+	// xとyが同じ集合か
+	boolean same(int x, int y) {
+		return find(x) == find(y);
 	}
 }
 
