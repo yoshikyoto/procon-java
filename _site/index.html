@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="UTF-8">
+	<title>procon-java</title>
+  </head>
+  <body>
+	<h1 id="java">プロコンで使えるアルゴリズム実装 Java</h1>
+
+<h2 id="section">ブログ</h2>
+
+<p>http://yoshiki-utakata.hatenablog.com/</p>
+
+<h2 id="section-1">グラフアルゴリズム</h2>
+
+<h3 id="section-2">ワーシャルフロイド法</h3>
+
+<p><code>java
+/**
+* ワーシャルフロイド法
+* コストが0だとエッジがないとみなされる版
+*/
+static void warshallFloyd(int[][] g, int n){
+	for (int k = 0; k &lt; n; k++) {
+		for (int i = 0; i &lt; n; i++) {
+			for (int j = 0; j &lt; n; j++) {
+				if(i == j) continue;
+				if(g[i][k] == 0 || g[k][j] == 0) continue;
+				if(g[i][j] == 0) {
+					g[i][j] = g[i][k] + g[k][j];
+				} else {
+					g[i][j] = Math.min(g[i][j], g[i][k] + g[k][j]);
+				}
+			}
+		}
+	}
+}
+</code></p>
+
+  </body>
+</html>
