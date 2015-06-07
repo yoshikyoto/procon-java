@@ -6,94 +6,132 @@ import java.math.BigInteger;
 /**
  * @author yoshikyoto
  */
-class Main {
-	public static void main(String[] args) throws Exception{
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		int n = Integer.parseInt(br.readLine());
-		for (int i = 0; i < n; i++) {
-			Zone zone = new Zone(br.readLine());
-			System.out.println(zone.solve());
-		}
-	}
-}
-
-class Zone{
-	ArrayList<Zone> children;
-	int value = 0;
-	
-	Zone(String str){
-		str = str.substring(1, str.length() - 1);
-		
-		try{
-			// 値だったらparseInt
-			value = Integer.parseInt(str);
-		}catch(NumberFormatException e){
-			// 値じゃなかったら木構造的にparse
-			children = new ArrayList<Zone>();
-			int depth = 0;
-			int start = 0;
-			for (int i = 0; i < str.length(); i++) {
-				switch(str.charAt(i)){
-				case '[':
-					if(depth == 0) start = i;
-					depth++;
-					break;
-				case ']':
-					depth--;
-					if(depth == 0){
-						children.add(new Zone(str.substring(start, i+1)));
-					}
-					break;
+class Main extends MyUtil {
+	public static void main(String[] args) throws Exception {
+		while(true) {
+			int n = readIntMap(0);	// 街の数
+			int m = readIntMap(1);	// 制限時間
+			int l = readIntMap(2);	// 冷凍施設のある街の数
+			int k = readIntMap(3); 	// 道路の数
+			int a = readIntMap(4);	// スタート
+			int h = readIntMap(5);	// ゴール
+			if(n+m+l+k+a+h == 0) break;
+			
+//			int inf = 1 << 28;
+			int[][] g = new int[n][n];
+//			for (int i = 0; i < n; i++) {
+//				for (int j = 0; j < n; j++) {
+//					g[i][j] = inf;
+//				}
+//			}
+			
+			boolean[] canFreeze = new boolean[n];
+			canFreeze[a] = true;
+			canFreeze[h] = true;
+			if(l != 0){
+				int list[] = readIntMap();
+				for (int i = 0; i < l; i++) {
+					canFreeze[list[i]] = true;
 				}
+			}else{
+				readLine();
+			}
+			
+			for (int i = 0; i < k; i++) {
+				int x = readIntMap(0);
+				int y = readIntMap(1);
+				int t = readIntMap(2);
+				g[x][y] = t;
+				g[y][x] = t;
+			}
+			
+			warshallFloyd(g, n);
+			
+			/*
+			for (int i = 0; i < n; i++) {
+				StringBuffer buf = new StringBuffer();
+				for (int j = 0; j < n; j++) {
+					buf.append(g[i][j] + "\t");
+				}
+				System.out.println(buf.toString().trim());
+			}
+			*/
+			
+			// 凍らせられない街のみにする
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < n; j++) {
+					if(!canFreeze[i] || !canFreeze[j]){
+						g[i][j] = 0;
+					}
+				}
+			}
+			
+			// 届かないエッジを除く
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < n; j++) {
+					if(g[i][j] > m){
+						g[i][j] = 0;
+					}
+				}
+			}
+			
+			// この状態でもう一回ワーシャルフロイド
+			warshallFloyd(g, n);
+			
+			if(g[a][h] == 0){
+				System.out.println("Help!");
+			}else if(g[a][h] <= m){
+				System.out.println(g[a][h]);
+			}else{
+				System.out.println(g[a][h] * 2 - m);
 			}
 		}
 	}
 	
-	int solve(){
-		// valueは必ず奇数なのでこれでいい
-		if(value != 0) return (value + 1) / 2;
-		
-		// 再帰的にsolve
-		ArrayList<Integer> arr = new ArrayList<Integer>();
-		for(Zone child : children){
-			arr.add(child.solve());
+	/**
+	 * ワーシャルフロイド法
+	 * コストが0だとエッジがないとみなされる版
+	 */
+	static void warshallFloyd(int[][] g, int n){
+		for (int k = 0; k < n; k++) {
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < n; j++) {
+					if(i == j) continue;
+					if(g[i][k] == 0 || g[k][j] == 0) continue;
+					if(g[i][j] == 0) {
+						g[i][j] = g[i][k] + g[k][j]; 
+					} else {
+						g[i][j] = Math.min(g[i][j], g[i][k] + g[k][j]);
+					}
+				}
+			}
 		}
-		
-		// 過半数を返す
-		Collections.sort(arr);
-		int sum = 0;
-		int maj = (arr.size() + 1) / 2; // arrのsizeはかならず奇数なので
-		for (int i = 0; i < maj; i++) {
-			sum += arr.get(i);
-		}
-		return sum;
+	}
+}
+
+/**
+ * 複素数
+ */
+class Complex {
+	static Complex I = new Complex(0, 1);
+	
+	double r = 0.0;
+	double i = 0.0;
+	Complex(double r, double i){
+		this.r = r;
+		this.i = i;
+	}
+	public Complex plus(Complex a){
+		return new Complex(r * a.r, i + a.i);
+	}
+
+	@Override
+	public String toString(){
+		return r + "+" + i + "i";
 	}
 }
 
 
-
-class BinaryIndexedTree{
-    int n;
-    int[] bit;
-    BinaryIndexedTree(int n){
-        this.n = n;
-        bit = new int[n+1];
-    }
-    int sum(int i){
-        int sum = 0;
-        while(i > 0){
-            sum += bit[i];
-            i -= i & -i;
-        }
-        return sum;
-    }
-    void add(int i, int v){
-        while(i <= n){
-            bit[i] += v;
-            i += i & -i;
-        }
-    }
-}
 
 
 // --- ここから下はライブラリ ----------
