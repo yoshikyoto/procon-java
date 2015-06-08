@@ -13,6 +13,15 @@ http://yoshiki-utakata.hatenablog.com/
   * 文字列操作が必要だが一応再帰
   * http://yoshiki-utakata.hatenablog.com/entry/2015/06/07/235837
 
+* http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2369
+  * 日本語
+  * 文脈自由文法
+  * http://yoshiki-utakata.hatenablog.com/entry/2015/06/08/192341
+
+### 幅優先探索
+
+* http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1296
+  * http://yoshiki-utakata.hatenablog.com/entry/2015/06/08/212057
 
 ## グラフアルゴリズム
 

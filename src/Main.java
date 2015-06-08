@@ -8,39 +8,55 @@ import java.math.BigInteger;
  */
 class Main {
 	public static void main(String[] args) throws Exception {
+		// System.out.println("aaxaaa".replaceAll("aa", "cba"));
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		char[] c = br.readLine().toCharArray();
-		int len = c.length;
-		
-		// 最終的に返ってきたポインタが c の長さだったら
-		if(len == check(c, len, 0)) {
-			System.out.println("Cat");
-		} else {
-			System.out.println("Rabbit");
+		while(true) {
+			int n = Integer.parseInt(br.readLine());
+			if(n == 0) break;
+			String[][] sed = new String[n][];
+			for(int i = 0; i < n; i++){
+				sed[i] = br.readLine().split(" ");
+			}
+			// ゴール
+			String s = br.readLine();
+			String g = br.readLine();
+			System.out.println(bfs(s, g, sed));
 		}
 	}
 	
-	static int check(char[] c, int len, int pointer) {
-		// 最初は必ずm
-		if(c[pointer] != 'm') return -1;
-		pointer++;
+	static int bfs(String s, String g, String[][] sed){
+		if(s.equals(g)) return 0;
+		int n = sed.length;
 		
-		// 次がeでない場合はそこから再帰的に
-		if(c[pointer] != 'e') {
-			pointer = check(c, len, pointer);
-			if(pointer == -1) return -1;
+		// 最初の状態
+		State startState = new State(s, 0);
+		ArrayDeque<State> q = new ArrayDeque<State>();
+		q.addLast(startState);
+		// 幅優先探索
+		while(q.size() > 0) {
+			State state = q.pollFirst();
+			for (int i = 0; i < n; i++) {
+				String newStr = state.str.replaceAll(sed[i][0], sed[i][1]);
+				// ゴールしていた場合
+				if(newStr.equals(g)) {
+					return state.count + 1;
+				}
+				// ゴールの文字列より長くならない, 元の文字列から変化している
+				if(newStr.length() < g.length() && !newStr.equals(state.str)) {
+					q.addLast(new State(newStr, state.count + 1));
+				}
+			}
 		}
-		pointer++;
-		
-		// 次がwでない場合はそこから再帰的に
-		if(c[pointer] != 'w') {
-			pointer = check(c, len, pointer);
-			if(pointer == -1) return -1;
-		}
-		pointer++;
-		
-		// mew文字列が終わる位置を返す
-		return pointer;
+		return -1;
+	}
+}
+
+class State {
+	String str;
+	int count;
+	public State(String str, int count) {
+		this.str = str;
+		this.count = count;
 	}
 }
 
