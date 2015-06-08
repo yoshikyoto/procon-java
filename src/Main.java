@@ -7,159 +7,40 @@ import java.math.BigInteger;
  * @author yoshikyoto
  */
 class Main {
-	static HashMap<String, String[]> groups;
 	public static void main(String[] args) throws Exception {
-		Scanner sc = new Scanner(new InputStreamReader(System.in));
-		while(true) {
-			int n = sc.nextInt();
-			if(n == 0) break;
-			
-			Cell[] cell = new Cell[n];
-			for (int i = 0; i < n; i++) {
-				double x = sc.nextDouble();
-				double y = sc.nextDouble();
-				double z = sc.nextDouble();
-				double r = sc.nextDouble();
-				cell[i] = new Cell(x, y, z, r);
-			}
-			
-			ArrayList<Isle> arr = new ArrayList<Isle>();
-			for (int i = 0; i < n; i++) {
-				for (int j = 0; j < i; j++) {
-					// コストを求める。
-					double xx = sq(cell[i].x - cell[j].x);
-					double yy = sq(cell[i].y - cell[j].y);
-					double zz = sq(cell[i].z - cell[j].z);
-					double dist = Math.sqrt(xx + yy + zz) - Math.abs(cell[i].r + cell[j].r);
-					dist = Math.max(0, dist);
-					Isle isle = new Isle(i, j, dist);
-					arr.add(isle);
-				}
-			}
-			
-			// コストでソート
-			Collections.sort(arr, new IsleComp());
-			
-			int nn = arr.size();
-			double ans = 0;
-			UnionFindTree uft = new UnionFindTree(nn+1);
-			for (int i = 0; i < nn; i++) {
-				Isle isle = arr.get(i);
-				if(uft.same(isle.x, isle.y)) continue;
-				// sameでなければcostを払って連結
-				ans += isle.cost;
-				uft.unite(isle.x, isle.y);
-			}
-			
-			System.out.printf("%.3f\n", ans);
-		}
-	}
-
-	/**
-	 * 二乗
-	 */
-	public static double sq(double d) {
-		return d * d;
-	}
-}
-
-/**
- * セル
- */
-class Cell {
-	double x, y, z, r;
-
-	public Cell(double x, double y, double z, double r) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.r = r;
-	}
-}
-
-/**
- * セルをコストでソートする用
- * @author yoshiyuki_sakamoto
- *
- */
-class Isle {
-	int x, y;
-	double cost;
-	public Isle(int x, int y, double dist) {
-		this.x = x;
-		this.y = y;
-		this.cost = dist;
-	}
-	@Override
-	public String toString() {
-		return x + " " + y + " " + cost;
-	}
-}
-
-class IsleComp implements Comparator<Isle> {
-	@Override
-	public int compare(Isle a, Isle b) {
-		if(a.cost == b.cost){
-			return 0;
-		}else if(a.cost > b.cost){
-			return 1;
-		}else{
-			return -1;
-		}
-	}
-}
-
-/**
- * UnionFindTree 
- * @author yoshikyoto
- */
-class UnionFindTree {
-	public int[] parent, rank;
-	public int n;
-	public int count;
-
-	// 初期化
-	UnionFindTree(int n) {
-		this.n = n;
-		count = n;
-		parent = new int[n];
-		rank = new int[n];
-		for (int i = 0; i < n; i++) {
-			parent[i] = i;
-			rank[i] = 0;
-		}
-	}
-
-	// 根を求める
-	int find(int x) {
-		if (parent[x] == x) {
-			return x;
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		char[] c = br.readLine().toCharArray();
+		int len = c.length;
+		
+		// 最終的に返ってきたポインタが c の長さだったら
+		if(len == check(c, len, 0)) {
+			System.out.println("Cat");
 		} else {
-			return parent[x] = find(parent[x]);
+			System.out.println("Rabbit");
 		}
 	}
-
-	// xとyの集合を結合
-	void unite(int x, int y) {
-		x = find(x);
-		y = find(y);
-		if (x == y) {
-			return;
+	
+	static int check(char[] c, int len, int pointer) {
+		// 最初は必ずm
+		if(c[pointer] != 'm') return -1;
+		pointer++;
+		
+		// 次がeでない場合はそこから再帰的に
+		if(c[pointer] != 'e') {
+			pointer = check(c, len, pointer);
+			if(pointer == -1) return -1;
 		}
-		if (rank[x] < rank[y]) {
-			parent[x] = y;
-			count--;
-		} else {
-			parent[y] = x;
-			if (rank[x] == rank[y])
-				rank[x]++;
-			count--;
+		pointer++;
+		
+		// 次がwでない場合はそこから再帰的に
+		if(c[pointer] != 'w') {
+			pointer = check(c, len, pointer);
+			if(pointer == -1) return -1;
 		}
-	}
-
-	// xとyが同じ集合か
-	boolean same(int x, int y) {
-		return find(x) == find(y);
+		pointer++;
+		
+		// mew文字列が終わる位置を返す
+		return pointer;
 	}
 }
 
