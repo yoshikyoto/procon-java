@@ -8,55 +8,34 @@ import java.math.BigInteger;
  */
 class Main {
 	public static void main(String[] args) throws Exception {
-		// System.out.println("aaxaaa".replaceAll("aa", "cba"));
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		while(true) {
-			int n = Integer.parseInt(br.readLine());
-			if(n == 0) break;
-			String[][] sed = new String[n][];
-			for(int i = 0; i < n; i++){
-				sed[i] = br.readLine().split(" ");
-			}
-			// ゴール
-			String s = br.readLine();
-			String g = br.readLine();
-			System.out.println(bfs(s, g, sed));
-		}
-	}
-	
-	static int bfs(String s, String g, String[][] sed){
-		if(s.equals(g)) return 0;
-		int n = sed.length;
+		Scanner sc = new Scanner(new InputStreamReader(System.in));
+		int a = sc.nextInt();
+		int b = sc.nextInt();
+		int c = sc.nextInt();
+		boolean[] visited = new boolean[60];
+		int time = 0;
 		
-		// 最初の状態
-		State startState = new State(s, 0);
-		ArrayDeque<State> q = new ArrayDeque<State>();
-		q.addLast(startState);
-		// 幅優先探索
-		while(q.size() > 0) {
-			State state = q.pollFirst();
-			for (int i = 0; i < n; i++) {
-				String newStr = state.str.replaceAll(sed[i][0], sed[i][1]);
-				// ゴールしていた場合
-				if(newStr.equals(g)) {
-					return state.count + 1;
+		while(!visited[time % 60]) {
+			visited[time % 60] = true;
+			int start = time % 60;
+			time += a;
+			int end = time % 60;
+			// System.out.println(start + " " + end);
+			int d = (time % 60 - c + 60) % 60;
+			if(start < end){
+				if(start <= c && c <= end) {
+					System.out.println(time - d);
+					return;
 				}
-				// ゴールの文字列より長くならない, 元の文字列から変化している
-				if(newStr.length() < g.length() && !newStr.equals(state.str)) {
-					q.addLast(new State(newStr, state.count + 1));
+			}else{
+				if(c <= end || start <= c) {
+					System.out.println(time - d);
+					return;
 				}
 			}
+			time += b;
 		}
-		return -1;
-	}
-}
-
-class State {
-	String str;
-	int count;
-	public State(String str, int count) {
-		this.str = str;
-		this.count = count;
+		System.out.println(-1);
 	}
 }
 
