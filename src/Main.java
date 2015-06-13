@@ -9,33 +9,55 @@ import java.math.BigInteger;
 class Main {
 	public static void main(String[] args) throws Exception {
 		Scanner sc = new Scanner(new InputStreamReader(System.in));
-		int a = sc.nextInt();
-		int b = sc.nextInt();
-		int c = sc.nextInt();
-		boolean[] visited = new boolean[60];
-		int time = 0;
-		
-		while(!visited[time % 60]) {
-			visited[time % 60] = true;
-			int start = time % 60;
-			time += a;
-			int end = time % 60;
-			// System.out.println(start + " " + end);
-			int d = (time % 60 - c + 60) % 60;
-			if(start < end){
-				if(start <= c && c <= end) {
-					System.out.println(time - d);
-					return;
-				}
-			}else{
-				if(c <= end || start <= c) {
-					System.out.println(time - d);
-					return;
+		while(true) {
+			int n = sc.nextInt();
+			if(n == 0) break;
+			
+			int[] p = new int[n];
+			int[] t = new int[n];
+			for (int i = 0; i < n; i++) {
+				p[i] = sc.nextInt();
+				t[i] = sc.nextInt();
+			}
+			int inf = 1<<28;
+			int[] prev_distance = new int[4];
+			prev_distance[1] = p[0];
+			
+			for (int i = 1; i < n; i++) {
+				// i番目の風船
+				int[] next_distance = new int[4];
+				
+				for(int j = 1; j < 4; j++) {
+					if(prev_distance[j] == 0) {
+						// 家に戻るパターン
+						// 0に戻ってから風船の位置に
+						// 家に戻る
+						int distance = p[i-1];
+						int time = p[i-1] * (j+1);
+						// 風船のの位置へ
+						distance += p[i];
+						time += p[i];
+						if(time <= t[i]) {
+							update(next_distance, j, prev_distance[j] + distance);
+						}
+						
+						// 家に戻らないパターン
+						if(j != 3 && prev_distance[j] == 0) {
+							
+						}
+					}
 				}
 			}
-			time += b;
 		}
-		System.out.println(-1);
+		sc.close();
+	}
+	
+	static void update (int[] a, int i, int val) {
+		if(a[i] == 0) {
+			a[i] = val;
+		}else{
+			a[i] = Math.min(a[i], val);
+		}
 	}
 }
 
