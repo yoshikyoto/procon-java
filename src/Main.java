@@ -1,80 +1,68 @@
 import java.io.*;
 import java.util.*;
 import java.lang.ArrayIndexOutOfBoundsException;
+import java.math.*;
 
 
 class Main {
 	static Scanner sc = new Scanner(new InputStreamReader(System.in));
 	public static void main(String[] args) throws Exception {
-		while(true) {
-			int a = sc.nextInt();
-			int b = sc.nextInt();
-			int d = sc.nextInt();
-			if(a + b + d == 0) break;
-			int[] ans = solve(a, b, d);
-			System.out.println(ans[0] + " " + ans[1]);
-		}
+		int r = sc.nextInt();
+		int n = sc.nextInt();
+		System.out.printf("%.6f", solve(r, n));
 	}
 	
-	static void comp(int[] ans, int acount, int bcount) {
-		if(ans[0] + ans[1] > acount + bcount) {
-			ans[0] = acount;
-			ans[1] = bcount;
+	static double solve(int r, int n) {
+
+		int[] dp = new int[39];
+		HashMap<int[], Integer> map = new HashMap<int[], Integer>();
+		for (int i = 0; i < n; i++) {
+			int xl = sc.nextInt();
+			int xr = sc.nextInt();
+			int h = sc.nextInt();
+			for(int j = xl; j < xr; j++) {
+				int index = j + 20;
+				dp[index] = Math.max(dp[index], h);
+			}
 		}
+		
+		for(double ans = -r; ans < 20.0; ans += 0.001) {
+			for (int i = 1-r; i < r; i++) {
+				int index = i + 20;
+				int h = Math.min(dp[index-1], dp[index]);
+				double dist = sqdist(0.0, ans, (double)h, 0.0);
+				if(dist < (double)(r*r)) {
+					return ans + (double)r;
+				}
+			}
+		}
+		return 0.0;
 	}
-	
-	static int[] solve(int a, int b, int d) {
-		int inf = 1 << 28;
-		int[] ans = {inf, inf};
-		
-		int acnt = d / a;
-		acnt++;
-		int bcnt = 0;
-		while(acnt >= 0) {
-			int sum = a * acnt + b * bcnt;
-			if(sum == d) {
-				comp(ans, acnt, bcnt);
-				acnt--;
-			} else if(sum > d) {
-				acnt--;
-			} else {
-				bcnt++;
-			}
-		}
-		
-		int asum = a;
-		int bsum = 0;
-		while(asum != bsum) {
-			int diff = asum - bsum;
-			if(Math.abs(diff) == d) {
-				comp(ans, asum / a, bsum / b);
-				break;
-			}
-			if(diff < d) {
-				asum += a;
-			} else {
-				bsum += b;
-			}
-		}
-		
-		asum = 0;
-		bsum = b;
-		while(asum != bsum) {
-			int diff = bsum - asum;
-			if(Math.abs(diff) == d) {
-				comp(ans, asum / a, bsum / b);
-				break;
-			}
-			if(diff < d) {
-				bsum += b;
-			} else {
-				asum += a;
-			}
-		}
-		
-		return ans;
+	public static int sq(int i) {
+		return i * i;
+	}
+
+	public static double sq(double d) {
+		return d * d;
+	}
+	// square を snippet から実装してください
+	public static int sqdist(int x1, int y1, int x2, int y2) {
+		return sq(x1 - x2) + sq(y1 - y2);
+	}
+
+	public static double sqdist(double x1, double y1, double x2, double y2) {
+		return sq(x1 - x2) + sq(y1 - y2);
+	}
+
+	public static double dist(int x1, int y1, int x2, int y2) {
+		return Math.sqrt(sqdist(x1, y1, x2, y2));
+	}
+
+	public static double dist(double x1, double y1, double x2, double y2) {
+		return Math.sqrt(sqdist(x1, y1, x2, y2));
 	}
 }
+
 
 
 /**
@@ -82,21 +70,21 @@ class Main {
  */
 class Complex {
 	static Complex I = new Complex(0, 1);
-	
+
 	double r = 0.0;
 	double i = 0.0;
 	Complex(double r, double i) {
 		this.r = r;
 		this.i = i;
 	}
-	
+
 	/**
 	 * 和
 	 */
 	public Complex add(Complex a) {
 		return new Complex(r * a.r, i + a.i);
 	}
-	
+
 	/**
 	 * 積
 	 */
@@ -105,16 +93,16 @@ class Complex {
 				r * a.r - i * a.i,
 				r * a.i + i * a.r);
 	}
-	
+
 	public Complex divide(double a) {
 		return new Complex(r/a, i/a);
 	}
-	
+
 	public Complex inverse() {
 		double b = 1 / (r*r + i*i);
 		return new Complex(r/b, -i/b);
 	}
-	    
+
 
 	@Override
 	public String toString(){
