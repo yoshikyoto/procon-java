@@ -10,32 +10,180 @@ import java.math.*;
  * @see Sample Input はちゃんと通ることを確認すべし
  */
 class Main {
-	// static Scanner sc = new Scanner(new InputStreamReader(System.in));
+	static Scanner sc = new Scanner(new InputStreamReader(System.in));
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	
 	public static void main(String[] args) throws Exception {
-		String[] in = {
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				 "11111111111111111111",
-				};
-		System.out.println(new OrderOfOperationsDiv2().minTime(in));
+		// 入力を受け取る
+		int n = Integer.parseInt(br.readLine());
+		int[] arr = MyIO.parseInt(br.readLine().split(" "));
+		
+		// 初期化
+		int begin = 0, end = 0;
+		int[] counts = new int[101];
+		counts[arr[0]]++;
+		int minLength = n;
+		
+		// 探索
+		while(true) {
+			if(satisfy(counts)) {
+				// begin - end 間に1,2,3が含まれている場合
+				// その間隔が最小かどうかを判定
+				int length = end - begin + 1;
+				if(length < minLength) {
+					minLength = length;
+				}
+				// 間隔を狭めようと試みる
+				counts[arr[begin]]--;
+				begin++;
+			} else {
+				// begin - end 間に1,2,3が含まれている場合
+				// 間隔を広げようと試みる
+				end++;
+				// 左端まで行ったら終了
+				if(end >= n) {
+					break;
+				}
+				counts[arr[end]]++;
+			}
+		}
+		
+		System.out.println(minLength);
+	}
+	
+	public static boolean satisfy(int[] counts) {
+		return counts[1] > 0 && counts[2] > 0 && counts[3] > 0;
+	}
+}
+// public static Graph g;
+
+/**
+ * グラフのノード
+ */
+class Node extends ArrayList<Edge> {
+	int index, depth = -1, dist = -1;
+
+	Node(int index) {
+		this.index = index;
+	}
+
+	Node parent;
+	boolean visited = false;
+}
+
+/**
+ * グラフのエッジ
+ */
+class Edge {
+	int from, to, cost;
+
+	Edge(int from, int to, int cost) {
+		this.from = from;
+		this.to = to;
+		this.cost = cost;
+	}
+}
+
+/**
+ * ダイクストラのためにノードの大きさを比較できるようにしておく
+ */
+class NodeComparator implements Comparator<Node> {
+	public int compare(Node a, Node b) {
+		return a.dist - b.dist;
+	}
+}
+
+class Graph {
+	Node n[];
+
+	/**
+	 * ノードの数でグラフを初期化
+	 */
+	Graph(int node_count) {
+		n = new Node[node_count];
+		for (int i = 0; i < node_count; i++)
+			n[i] = new Node(i);
+	}
+
+	/**
+	 * エッジのfromをもとにノードをエッジを追加
+	 */
+	public void add(Edge e) {
+		n[e.from].add(e);
+	}
+
+	public Node getNode(int i) {
+		return n[i];
+	}
+
+	public Node lca(int a, int b) {
+		// 浅い方をaとする
+		Node nodeA, nodeB;
+		if (n[a].depth < n[b].depth) {
+			nodeA = n[a];
+			nodeB = n[b];
+		} else {
+			nodeA = n[b];
+			nodeB = n[a];
+		}
+		// 同じ深さまで親をたどる
+		int diff = nodeB.depth - nodeA.depth;
+		for (int k = 0; k < diff; k++) {
+			nodeB = nodeB.parent;
+		}
+		// 共通祖先を見つける
+		while (nodeA != nodeB) {
+			nodeA = nodeA.parent;
+			nodeB = nodeB.parent;
+		}
+		return nodeA;
+	}
+
+	public void calcDepth(int root) {
+		ArrayDeque<Integer> que = new ArrayDeque<Integer>();
+		que.push(root);
+		n[root].depth = 0;
+
+		while (que.size() > 0) {
+			int curr = que.pop();
+			Node curr_node = n[curr];
+			for (Edge e : curr_node) {
+				int next = e.to;
+				Node next_node = n[next];
+				if (next_node.depth == -1) {
+					next_node.depth = curr_node.depth + 1;
+					next_node.parent = curr_node;
+					que.push(next);
+				}
+			}
+		}
+	}
+
+	public int[] dijkstra(int s) {
+		PriorityQueue<Node> q = new PriorityQueue<Node>(n.length,
+				new NodeComparator());
+		Node start_node = new Node(s);
+		start_node.dist = 0;
+		q.add(start_node);
+		int[] dist = new int[n.length];
+		for (int i = 0; i < dist.length; i++)
+			dist[i] = -1;
+		dist[s] = 0;
+
+		while (q.size() > 0) {
+			Node currNode = q.poll();
+			if (dist[currNode.index] < currNode.dist)
+				continue;
+			for (Edge e : n[currNode.index]) {
+				Node nextNode = new Node(e.to);
+				nextNode.dist = currNode.dist + e.cost;
+				if (dist[e.to] == -1 || dist[e.to] > nextNode.dist) {
+					dist[e.to] = nextNode.dist;
+					q.add(nextNode);
+				}
+			}
+		}
+		return dist;
 	}
 }
 
