@@ -7,6 +7,7 @@ import java.math.*;
  * @author yoshikyoto
  * 
  * @see 答えが int に収まりそうか注意
+ * @see Yes YES 結果の大文字小文字間違えてないか？
  * @see Sample Input はちゃんと通ることを確認すべし
  */
 class Main {
@@ -14,41 +15,35 @@ class Main {
 	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	
 	public static void main(String[] args) throws Exception {
-		// 入力を受け取る
 		int n = Integer.parseInt(br.readLine());
-		int[] arr = MyIO.parseInt(br.readLine().split(" "));
-		
-		// 初期化
-		int begin = 0, end = 0;
-		int[] counts = new int[101];
-		counts[arr[0]]++;
-		int minLength = n;
-		
-		// 探索
-		while(true) {
-			if(satisfy(counts)) {
-				// begin - end 間に1,2,3が含まれている場合
-				// その間隔が最小かどうかを判定
-				int length = end - begin + 1;
-				if(length < minLength) {
-					minLength = length;
-				}
-				// 間隔を狭めようと試みる
-				counts[arr[begin]]--;
-				begin++;
-			} else {
-				// begin - end 間に1,2,3が含まれている場合
-				// 間隔を広げようと試みる
-				end++;
-				// 左端まで行ったら終了
-				if(end >= n) {
-					break;
-				}
-				counts[arr[end]]++;
+		// initial state
+		int t = 0;
+		int x = 0;
+		int y = 0;
+		for (int i = 0; i < n; i++) {
+			int[] input = MyIO.parseInt(br.readLine().split(" "));
+			int nextT  = input[0];
+			int nextX = input[1];
+			int nextY = input[2];
+			// calculate manhattan distance
+			int distance = Math.abs(x - nextX) + Math.abs(y - nextY);
+			int timedelta = nextT - t;
+			
+			// too far
+			if (timedelta < distance) {
+				System.out.println("No");
+				return;
 			}
+			
+			if ((timedelta % 2) != (distance % 2)) {
+				System.out.println("No");
+				return;
+			}
+			t = nextT;
+			x = nextX;
+			y = nextY;
 		}
-		
-		System.out.println(minLength);
+		System.out.println("Yes");
 	}
 	
 	public static boolean satisfy(int[] counts) {
@@ -58,7 +53,7 @@ class Main {
 // public static Graph g;
 
 /**
- * グラフのノード
+  * グラフのノード
  */
 class Node extends ArrayList<Edge> {
 	int index, depth = -1, dist = -1;
